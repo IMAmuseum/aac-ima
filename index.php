@@ -35,6 +35,9 @@ define( 'FILE_EMU_OLD', DIR_DATA . 'DagwoodEmuRecords.xml' );
 define( 'FILE_EMU_NEW', DIR_DATA . 'emu.xml' );
 define( 'FILE_IDS', DIR_DATA . 'ids.json' );
 
+define( 'GENERATE_SCHEMA', false );
+define( 'FILE_AAC_SAMPLE', DIR_DATA . 'aac.sample.json' );
+define( 'FILE_AAC_SCHEMA', DIR_DATA . 'aac.schema.json' );
 
 // Create a file that contains our desired EMU irns (ids)
 // We will use this to parse the XML for only the records we want
@@ -156,5 +159,31 @@ if( !file_exists( FILE_EMU_NEW ) ) {
     echo "Done.";
 
     ob_end_flush();
+
+}
+
+// This is a one-time run. It is meant to remove the keys from the json.
+// Copy some small-ish portion of the aac.pretty.json to aac.sample.json
+// Mine ended up being about 380,000 lines.
+// https://github.com/snowplow/schema-guru
+// You might need to adjust the paths:
+// ./schema-guru schema --output aac.schema.json --no-length aac.sample.json
+if( GENERATE_SCHEMA && file_exists( FILE_AAC_SAMPLE ) ) {
+
+    header("Content-Type: application/json");
+
+    $json = file_get_contents( FILE_AAC_SAMPLE );
+    $json = json_decode( $json );
+
+    $out = array();
+    foreach( $json->data as $datum ) {
+        $out[] = $datum;
+    }
+
+    $out = json_encode( $out );
+    file_put_contents( FILE_AAC_SAMPLE, $out );
+
+    echo $out;
+    exit;
 
 }
