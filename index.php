@@ -1,7 +1,18 @@
 <?php
 
-// Parse the XML, keeping only those objects that appear in the AAC JSON
-//
+// IRN = Emu's internal reference number (i.e. unique id)
+// 1. Parse the old JSON submitted to AAC to get an array of ids (irns)
+// 2. Parse the Emu XML, keep only those objects that appear in the AAC JSON
+// 3. Reconcile data...
+// 4. Split the new JSON into two files
+
+// We'll be using to the parse the XML files:
+// https://github.com/hakre/XMLReaderIterator
+
+// Don't minify the generated XML and JSON. Most editors will choke on that.
+// If you are on Windows, try using these tools to view the data:
+// http://development.wellisolutions.de/huge-json-viewer/
+// http://www.firstobject.com/dn_editor.htm
 
 define( 'WS', DIRECTORY_SEPARATOR );
 
@@ -11,6 +22,7 @@ define( 'DIR_VENDOR',   DIR_ROOT . 'vendor'   . WS );
 
 require DIR_VENDOR .'autoload.php';
 
+// We'll be setting this on a per-section basis:
 // header("Content-Type: text/plain");
 // header("Content-Type: application/json");
 
@@ -42,6 +54,7 @@ if( !file_exists( FILE_IDS ) ) {
 
 }
 
+// These are just helpers to ease the parsing of this particular XML
 class ObjectElement extends SimpleXMLElement {
 
     // Shortcut for getting value of <meta> w/ emu_name attribute
@@ -54,7 +67,7 @@ class ObjectElement extends SimpleXMLElement {
 
 }
 
-// We will use this to parse <object> in the XML
+// We will use this to parse <object> in the XML en masse
 class ObjectIterator extends XMLElementIterator {
     const ELEMENT_NAME = 'object';
 
@@ -94,7 +107,7 @@ if( !file_exists( FILE_EMU_NEW ) ) {
     $reader = new XMLReader();
     $reader->open( FILE_EMU_OLD );
 
-    // Inefficient, but we need to do an Xpath query a la in_array for irns
+    // Inefficient, we'll use this to compare ids via in_array
     $ids = file_get_contents( FILE_IDS );
     $ids = json_decode( $ids );
 
