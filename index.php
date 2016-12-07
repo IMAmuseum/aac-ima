@@ -379,3 +379,53 @@ if( !file_exists( FILE_AAC_ACTORS ) ) {
 
 }
 
+
+// Now, we remove actors from objects and link to their ids
+if( !file_exists( FILE_AAC_OBJECTS ) ) {
+
+    header("Content-Type: text/plain");
+
+    $objects = file_get_contents( FILE_AAC_NEW );
+    $objects = json_decode( $objects );
+    $objects = $objects->data;
+
+    // We can just unset the one problematic object in this case
+    if( isset( $objects->{'21509'} ) ) {
+        unset( $objects->{'21509'} );
+    }
+
+    $results = [];
+
+    foreach( $objects as $object ) {
+
+        if( $object->actors ) {
+
+            $actors = array();
+
+            // We should have array_mapped this but am lazy
+            foreach( $object->actors as $actor ) {
+                $actors[] = $actor->id;
+            }
+
+            $object->actors = $actors;
+            $results[] = $object;
+        }
+
+    }
+
+    // Match our output to the structure of the old JSON
+    $out = array();
+    foreach( $results as $result ) {
+        $out[ $result->id ] = $result;
+    }
+
+    $out = array(
+        'count' => count($results),
+        'data' => $out
+    );
+
+    $out = json_encode( $out, JSON_PRETTY_PRINT );
+    file_put_contents( FILE_AAC_OBJECTS, $out );
+    echo $out;
+
+}
