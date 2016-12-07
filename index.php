@@ -187,3 +187,98 @@ if( GENERATE_SCHEMA && file_exists( FILE_AAC_SAMPLE ) ) {
     exit;
 
 }
+
+// Alright, let's do some data mapping yay
+// Out of necessity, we'll loop through emu.xml and match IRNs against aac.json
+// There's a couple records that could not be matched. They should be discarded.
+// We'll *try* to update all the fields, but we *need* to add irns and ulan_id to actors.
+// Much of the boilerplate here is similar to the above section.
+
+if( !file_exists( FILE_AAC_NEW ) ) {
+
+    // We are going to output the results as we go along
+    header("Content-Type: text/plain");
+
+    // Start output buffering if it's disabled
+    // http://php.net/manual/en/function.ob-get-level.php
+    if( !ob_get_level() ) {
+        ob_start();
+    }
+
+    // Use the slimmed-down version of the Emu dump
+    $reader = new XMLReader();
+    $reader->open( FILE_EMU_NEW );
+
+    // We'll be comparing the XML to the JSON; XML is the definitive source.
+    // Note that the root of this JSON data is an object, not an array
+    // The keys in that object are numerical, corresponding to Emu's IRNs
+    $json = file_get_contents( FILE_AAC_OLD );
+    $json = json_decode( $json );
+    $json = $json->data;
+
+    $objects = new ObjectIterator($reader);
+    $results = array();
+
+    foreach( $objects as $emu_object ) {
+
+        // Find the object in the JSON based on IRN
+        $irn = $emu_object->meta('irn');
+
+        $aac_object = $json->{$irn};
+
+        if( $aac_object->actors ) {
+            $emu_actors = $emu_object->xpath("/*/meta[@emu_name='CreCreatorRef_tab']");
+            $aac_actors = $aac_object->actors;
+
+            foreach( $emu_actors as $emu_actor ) {
+                foreach( $aac_actors as $aac_actor ) {
+
+                    // If any of one these match, it's a match overall
+                    $match = array(
+                        $emu_actor->meta('NamFullName') == $aac_actor->name_full,
+                        $emu_actor->meta('NamFirst') == $aac_actor->name_first,
+                        $emu_actor->meta('NamLast') == $aac_actor->name_last,
+                        $emu_actor->meta('NamOrganisation') == $aac_actor->name_organization,
+                        $emu_actor->meta('NamTaxonomicName') == $aac_actor->name_taxonomic
+                    );
+
+                    if( in_array( 1, $match ) ) {
+                        $aac_actor->id = $emu_actor->meta('irn');
+                        $aac_actor->ulan_id = $emu_actor->meta('UlaUlanIdNo');
+                    }
+                }
+            }
+        }
+
+        // We should likely only push if there is a match
+        $results[] = $aac_object;
+
+        ob_flush();
+        flush();
+
+        // Uncomment for testing
+        // if( $objects->key() > 1 ) break;
+
+    }
+
+
+    // Match our output to the structure of the old JSON
+    $out = array();
+    foreach( $results as $result ) {
+        $out[ $result->id ] = $result;
+    }
+
+    $out = array(
+        'count' => count($result),
+        'data' => $out
+    );
+
+    $out = json_encode( $out, JSON_PRETTY_PRINT );
+
+    file_put_contents( FILE_AAC_NEW, $out );
+
+    echo $out;
+
+    ob_end_flush();
+
+}
