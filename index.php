@@ -271,7 +271,7 @@ if( !file_exists( FILE_AAC_NEW ) ) {
     }
 
     $out = array(
-        'count' => count($result),
+        'count' => count($results),
         'data' => $out
     );
 
