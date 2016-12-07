@@ -39,6 +39,9 @@ define( 'GENERATE_SCHEMA', false );
 define( 'FILE_AAC_SAMPLE', DIR_DATA . 'aac.sample.json' );
 define( 'FILE_AAC_SCHEMA', DIR_DATA . 'aac.schema.json' );
 
+define( 'FILE_AAC_ACTORS', DIR_DATA . 'aac-actors.json' );
+define( 'FILE_AAC_OBJECTS', DIR_DATA . 'aac-objects.json' );
+
 define( 'VALIDATE_ACTOR_IRNS', false );
 
 // Create a file that contains our desired EMU irns (ids)
@@ -314,3 +317,65 @@ if( VALIDATE_ACTOR_IRNS && file_exists( FILE_AAC_NEW ) ) {
     echo $out;
 
 }
+
+// Now, we need to generate a separate JSON for actors
+if( !file_exists( FILE_AAC_ACTORS ) ) {
+
+    header("Content-Type: text/plain");
+
+    $objects = file_get_contents( FILE_AAC_NEW );
+    $objects = json_decode( $objects );
+    $objects = $objects->data;
+
+    // We can just unset the one problematic object in this case
+    if( isset( $objects->{'21509'} ) ) {
+        unset( $objects->{'21509'} );
+    }
+
+    $results = [];
+
+    foreach( $objects as $object ) {
+
+        if( $object->actors ) {
+
+            foreach( $object->actors as $actor ) {
+
+                $found = false;
+
+                foreach( $results as $result ) {
+
+                    if( $actor->id == $result->id ) {
+                        $found = true;
+                    }
+
+                }
+
+                // Only add it to the list if it's new
+                if( !$found ) {
+                    $results[] = $actor;
+                }
+
+            }
+
+        }
+
+    }
+
+
+    // Match our output to the structure of the old JSON
+    $out = array();
+    foreach( $results as $result ) {
+        $out[ $result->id ] = $result;
+    }
+
+    $out = array(
+        'count' => count($results),
+        'data' => $out
+    );
+
+    $out = json_encode( $out, JSON_PRETTY_PRINT );
+    file_put_contents( FILE_AAC_ACTORS, $out );
+    echo $out;
+
+}
+
