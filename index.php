@@ -39,6 +39,8 @@ define( 'GENERATE_SCHEMA', false );
 define( 'FILE_AAC_SAMPLE', DIR_DATA . 'aac.sample.json' );
 define( 'FILE_AAC_SCHEMA', DIR_DATA . 'aac.schema.json' );
 
+define( 'VALIDATE_ACTOR_IRNS', false );
+
 // Create a file that contains our desired EMU irns (ids)
 // We will use this to parse the XML for only the records we want
 if( !file_exists( FILE_IDS ) ) {
@@ -280,5 +282,35 @@ if( !file_exists( FILE_AAC_NEW ) ) {
     echo $out;
 
     ob_end_flush();
+
+}
+
+// Helper to ensure that all actors have IRNs
+if( VALIDATE_ACTOR_IRNS && file_exists( FILE_AAC_NEW ) ) {
+
+    header("Content-Type: text/plain");
+
+    $objects = file_get_contents( FILE_AAC_NEW );
+    $objects = json_decode( $objects );
+    $objects = $objects->data;
+
+    $results = [];
+
+    foreach( $objects as $object ) {
+        $found = true;
+        if( $object->actors ) {
+            foreach( $object->actors as $actor ) {
+                if( !isset($actor->id) ) {
+                    $found = false;
+                }
+            }
+        }
+        if( !$found ) {
+            $results[] = $object;
+        }
+    }
+
+    $out = json_encode( $results, JSON_PRETTY_PRINT );
+    echo $out;
 
 }
