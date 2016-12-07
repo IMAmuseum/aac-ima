@@ -1,0 +1,11 @@
+{
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/hakre/XMLReaderIterator.git"
+        }
+    ],
+    "require": {
+        "hakre/xmlreaderiterator": "dev-master"
+    }
+}
