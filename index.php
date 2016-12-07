@@ -41,3 +41,32 @@ if( !file_exists( FILE_IDS ) ) {
     exit;
 
 }
+
+class ObjectElement extends SimpleXMLElement {
+
+    // Shortcut for getting value of <meta> w/ emu_name attribute
+    public function meta( $emu_name ) {
+        $emu_name = $this->xpath("/*/meta[@emu_name='{$emu_name}']");
+        $emu_name = array_shift( $emu_name );
+        $emu_name = $emu_name ? (string) $emu_name : null;
+        return $emu_name;
+    }
+
+}
+
+// We will use this to parse <object> in the XML
+class ObjectIterator extends XMLElementIterator {
+    const ELEMENT_NAME = 'object';
+
+    public function __construct(XMLReader $reader) {
+        parent::__construct($reader, self::ELEMENT_NAME);
+    }
+
+    /**
+     * @return SimpleXMLElement
+     */
+    public function current() {
+        // http://stackoverflow.com/questions/2970602/php-how-to-handle-cdata-with-simplexmlelement
+        return simplexml_load_string($this->reader->readOuterXml(), "ObjectElement", LIBXML_NOCDATA);
+    }
+}
