@@ -240,6 +240,9 @@ if( !file_exists( FILE_AAC_NEW ) ) {
 
         $aac_object = $json->{$irn};
 
+        // Keep track if there's a match
+        $found = true;
+
         if( $aac_object->actors ) {
             $emu_actors = $emu_object->xpath("./meta[@emu_name='CreCreatorRef_tab']");
             $aac_actors = $aac_object->actors;
@@ -260,13 +263,17 @@ if( !file_exists( FILE_AAC_NEW ) ) {
                     if( in_array( 1, $match ) ) {
                         $aac_actor->id = $emu_actor->meta('irn');
                         $aac_actor->ulan_id = $emu_actor->meta('UlaUlanIdNo');
+                    }else{
+                        $found = false;
                     }
                 }
             }
         }
 
-        // We should likely only push if there is a match
-        $results[] = $aac_object;
+        // For now, we push only if there is a match
+        if( $found ) {
+            $results[] = $aac_object;
+        }
 
         ob_flush();
         flush();
