@@ -39,6 +39,7 @@ define( 'GENERATE_SCHEMA', false );
 define( 'FILE_AAC_SAMPLE', DIR_DATA . 'aac.sample.json' );
 define( 'FILE_AAC_SCHEMA', DIR_DATA . 'aac.schema.json' );
 
+define( 'FILE_AAC_ACTORS_MIN', DIR_DATA . 'aac-actors-min.json' );
 define( 'FILE_AAC_ACTORS', DIR_DATA . 'aac-actors.json' );
 define( 'FILE_AAC_OBJECTS', DIR_DATA . 'aac-objects.json' );
 
@@ -239,6 +240,7 @@ if( !file_exists( FILE_AAC_NEW ) ) {
                 foreach( $aac_actors as $aac_actor ) {
 
                     // If any of one these match, it's a match overall
+                    // TODO: We should be careful w/ the first/last name match...
                     $match = array(
                         $emu_actor->meta('NamFullName') == $aac_actor->name_full,
                         $emu_actor->meta('NamFirst') == $aac_actor->name_first,
@@ -426,6 +428,81 @@ if( !file_exists( FILE_AAC_OBJECTS ) ) {
 
     $out = json_encode( $out, JSON_PRETTY_PRINT );
     file_put_contents( FILE_AAC_OBJECTS, $out );
+    echo $out;
+
+}
+
+// Looks like each actor-object relationship has a unique IRN. Ugh.
+// Let's crunch the new actors file and turn the id field into an array
+
+if( file_exists( FILE_AAC_ACTORS ) && !file_exists( FILE_AAC_ACTORS_MIN ) ) {
+
+    header("Content-Type: text/plain");
+
+    $actors = file_get_contents( FILE_AAC_ACTORS );
+    $actors = json_decode( $actors );
+    $actors = $actors->data;
+
+    $results = [];
+    $counter = 0;
+
+    // I don't think this one needs to be by ref, but just in case
+    foreach( $actors as $actor ) {
+
+        // Uncomment for testing
+        // if( $counter > 6 ) break;
+
+        $found = false;
+
+        // This one almost certainly needs to be by reference
+        foreach( $results as &$result ) {
+
+            // If any of one these match, it's a match overall
+            // Note that in this case, *both* first and last name must match
+            $match = array(
+                isset( $actor->name_full ) && $actor->name_full == $result->name_full,
+                ( isset( $actor->name_last ) && $actor->name_last == $result->name_last ) &&
+                ( isset( $actor->name_first ) && $actor->name_first == $result->name_first ),
+                isset( $actor->name_taxonomic ) && $actor->name_taxonomic == $result->name_taxonomic,
+                isset( $actor->name_organization ) && $actor->name_organization == $result->name_organization
+            );
+
+            // On match, add this actor's id to the existing actor
+            // Then, break out of the loop
+            if( in_array( 1, $match ) ) {
+
+                // Crude way of detecting errors
+                set_error_handler(function() use ($actor, $result) {
+                    print_r( $actor );
+                    print_r( $result );
+                    exit;
+                });
+
+                array_push( $result->id, $actor->id );
+                $found = true;
+                break;
+            }
+        }
+
+        // If no match found, add the whole actor to the result
+        // Transform their id field into an array
+        if( !$found ) {
+            $actor->id = array( $actor->id );
+            $results[] = $actor;
+        }
+
+        $counter++;
+
+    }
+
+    // Unlike previously, we will NOT match the old JSON structure here
+    $out = array(
+        'count' => count($results),
+        'data' => $results
+    );
+
+    $out = json_encode( $out, JSON_PRETTY_PRINT );
+    file_put_contents( FILE_AAC_ACTORS_MIN, $out );
     echo $out;
 
 }
