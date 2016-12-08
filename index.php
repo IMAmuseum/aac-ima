@@ -72,7 +72,7 @@ class ObjectElement extends SimpleXMLElement {
 
     // Shortcut for getting value of <meta> w/ emu_name attribute
     public function meta( $emu_name ) {
-        $emu_name = $this->xpath("/*/meta[@emu_name='{$emu_name}']");
+        $emu_name = $this->xpath("./meta[@emu_name='{$emu_name}']");
         $emu_name = array_shift( $emu_name );
         $emu_name = $emu_name ? (string) $emu_name : null;
         return $emu_name;
