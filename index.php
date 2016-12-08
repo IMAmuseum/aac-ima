@@ -3,8 +3,12 @@
 // IRN = Emu's internal reference number (i.e. unique id)
 // 1. Parse the old JSON submitted to AAC to get an array of ids (irns)
 // 2. Parse the Emu XML, keep only those objects that appear in the AAC JSON
-// 3. Reconcile data...
-// 4. Split the new JSON into two files
+// 3. (Optional) Create JSON Schema files for reference
+// 4. Data mapping: take old JSON and supplement it w/ ids from the new Emu XML
+// 5. Ensure that all actors have IRNs
+// 6. Generate a separate JSON for actors
+// 7. Generate a separate JSON for objects
+// 8. Crunch the new actors JSON to consolidate all the identical actors
 
 // We'll be using to the parse the XML files:
 // https://github.com/hakre/XMLReaderIterator
