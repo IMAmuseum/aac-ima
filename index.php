@@ -165,6 +165,7 @@ if( !file_exists( FILE_EMU_NEW ) ) {
     echo "Done.";
 
     ob_end_flush();
+    exit;
 
 }
 
@@ -287,6 +288,7 @@ if( !file_exists( FILE_AAC_NEW ) ) {
     echo $out;
 
     ob_end_flush();
+    exit;
 
 }
 
@@ -317,6 +319,7 @@ if( VALIDATE_ACTOR_IRNS && file_exists( FILE_AAC_NEW ) ) {
 
     $out = json_encode( $results, JSON_PRETTY_PRINT );
     echo $out;
+    exit;
 
 }
 
@@ -378,6 +381,7 @@ if( !file_exists( FILE_AAC_ACTORS ) ) {
     $out = json_encode( $out, JSON_PRETTY_PRINT );
     file_put_contents( FILE_AAC_ACTORS, $out );
     echo $out;
+    exit;
 
 }
 
@@ -429,6 +433,7 @@ if( !file_exists( FILE_AAC_OBJECTS ) ) {
     $out = json_encode( $out, JSON_PRETTY_PRINT );
     file_put_contents( FILE_AAC_OBJECTS, $out );
     echo $out;
+    exit;
 
 }
 
@@ -504,5 +509,6 @@ if( file_exists( FILE_AAC_ACTORS ) && !file_exists( FILE_AAC_ACTORS_MIN ) ) {
     $out = json_encode( $out, JSON_PRETTY_PRINT );
     file_put_contents( FILE_AAC_ACTORS_MIN, $out );
     echo $out;
+    exit;
 
 }
