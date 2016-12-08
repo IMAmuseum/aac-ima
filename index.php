@@ -232,17 +232,20 @@ if( !file_exists( FILE_AAC_NEW ) ) {
 
     foreach( $objects as $emu_object ) {
 
+        // Uncomment for testing
+        // if( $objects->key() > 2 ) break;
+
         // Find the object in the JSON based on IRN
         $irn = $emu_object->meta('irn');
 
         $aac_object = $json->{$irn};
 
         if( $aac_object->actors ) {
-            $emu_actors = $emu_object->xpath("/*/meta[@emu_name='CreCreatorRef_tab']");
+            $emu_actors = $emu_object->xpath("./meta[@emu_name='CreCreatorRef_tab']");
             $aac_actors = $aac_object->actors;
 
             foreach( $emu_actors as $emu_actor ) {
-                foreach( $aac_actors as $aac_actor ) {
+                foreach( $aac_actors as &$aac_actor ) {
 
                     // If any of one these match, it's a match overall
                     // TODO: We should be careful w/ the first/last name match...
@@ -267,9 +270,6 @@ if( !file_exists( FILE_AAC_NEW ) ) {
 
         ob_flush();
         flush();
-
-        // Uncomment for testing
-        // if( $objects->key() > 1 ) break;
 
     }
 
