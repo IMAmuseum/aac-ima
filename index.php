@@ -368,7 +368,12 @@ if( !file_exists( FILE_AAC_ACTORS ) ) {
 
                 // Only add it to the list if it's new
                 if( !$found ) {
+
+                    // Let's store the role on the object side
+                    unset( $actor->role );
+
                     $results[] = $actor;
+
                 }
 
             }
@@ -421,7 +426,10 @@ if( !file_exists( FILE_AAC_OBJECTS ) ) {
 
             // We should have array_mapped this but am lazy
             foreach( $object->actors as $actor ) {
-                $actors[] = $actor->id;
+                $actors[] = array(
+                    'id' => $actor->id,
+                    'role' => $actor->role
+                );
             }
 
             $object->actors = $actors;
