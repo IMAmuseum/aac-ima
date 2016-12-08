@@ -304,6 +304,7 @@ if( !file_exists( FILE_AAC_NEW ) ) {
 }
 
 // Helper to ensure that all actors have IRNs
+// An empty array is a good sign here
 if( VALIDATE_ACTOR_IRNS && file_exists( FILE_AAC_NEW ) ) {
 
     header("Content-Type: text/plain");
@@ -512,6 +513,7 @@ if( file_exists( FILE_AAC_ACTORS ) && !file_exists( FILE_AAC_ACTORS_MIN ) ) {
         // Transform their id field into an array
         if( !$found ) {
             $actor->id = array( $actor->id );
+            $actor->ulan_id = empty($actor->ulan_id) ? null : $actor->ulan_id;
             $results[] = $actor;
         }
 
