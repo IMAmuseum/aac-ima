@@ -4,3 +4,7 @@ data/DagwoodEmuRecords.xml
 data/ids.json
 data/aac.pretty.json
 data/emu.xml
+data/aac-new.json
+data/aac.sample.json
+data/aac.schema.json
+docs/*
